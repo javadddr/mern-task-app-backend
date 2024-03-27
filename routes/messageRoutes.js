@@ -15,8 +15,9 @@ router.post('/messages', verifyToken, async (req, res) => {
       text,
       pic
     });
-    await newMessage.save();
-    res.status(201).json(newMessage);
+    const savedMessage = await newMessage.save();
+    req.io.emit('receiveMessage', savedMessage); // Emit to all clients
+    res.status(201).json(savedMessage);
   } catch (error) {
     res.status(400).send(error.message);
   }

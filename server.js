@@ -16,12 +16,16 @@ const io = new Server(server, {
     },
 });
 
-  
+  // Pass the io instance to your routes
+app.use('/api', (req, res, next) => {
+    req.io = io;
+    next();
+});
 
 app.use(cors());
 app.use(express.json());
 app.use(userRoutes);
-app.use(messageRoutes);
+app.use('/api', messageRoutes); 
 
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('Connected to MongoDB'))
