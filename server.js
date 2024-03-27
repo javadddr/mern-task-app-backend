@@ -9,7 +9,7 @@ const app = express();
 
 // Use CORS middleware to allow cross-origin requests
 app.use(cors({
-    origin:["http://localhost:3000","https://mern-task-app.onrender.com"]
+    origin:["http://localhost:3000","https://mern-task-appjavad.onrender.com"]
 }));
 
 // Middleware to parse JSON
