@@ -1,36 +1,45 @@
-require('dotenv').config(); // Load environment variables
 const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
 const mongoose = require('mongoose');
-const messageRoutes = require('./routes/messageRoutes');
 const cors = require('cors');
-const userRoutes = require('./routes/userRoutes'); // Ensure this path matches your project structure
+const messageRoutes = require('./routes/messageRoutes');
+const userRoutes = require('./routes/userRoutes');
 
 const app = express();
+const server = http.createServer(app); // Create an HTTP server instance
+const io = new Server(server, {
+    cors: {
+      origin: ["http://localhost:3000", "https://mern-task-app-backend-ks55.onrender.com"], // Update this to match your actual client's URL
+      methods: ["GET", "POST"],
+    },
+  });
+  
 
-// Use CORS middleware to allow cross-origin requests
-app.use(cors({
-    origin:["http://localhost:3000","https://mern-task-appjavad.onrender.com"]
-}));
-
-// Middleware to parse JSON
+app.use(cors());
 app.use(express.json());
-
-// Use user routes
 app.use(userRoutes);
 app.use(messageRoutes);
-// Connect to MongoDB
-// Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI)
-.then(() => console.log('Connected to MongoDB'))
-.catch((err) => console.error('Could not connect to MongoDB:', err));
 
-// Define a simple route for testing
-app.get('/', (req, res) => {
-    res.send('Hello World!');
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log('Connected to MongoDB'))
+  .catch((err) => console.error('Could not connect to MongoDB:', err));
+
+io.on('connection', (socket) => {
+    console.log('a user connected: ' + socket.id);
+
+    socket.on('disconnect', () => {
+        console.log('user disconnected: ' + socket.id);
+    });
+
+    // Listen for sendMessage event from clients
+    socket.on('sendMessage', (message) => {
+        // Broadcast message to all clients
+        io.emit('receiveMessage', message);
+    });
 });
 
-// Listen on a port
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
+server.listen(PORT, () => { // Make sure to change `app.listen` to `server.listen`
     console.log(`Server is running on port ${PORT}`);
 });
